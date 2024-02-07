@@ -60,6 +60,7 @@ cmake -S "${SUBPROJ_SRC}" -B "${PKG_BULD_DIR}" \
   -D CMAKE_EXPORT_COMPILE_COMMANDS:BOOL=ON \
   -D CMAKE_POSITION_INDEPENDENT_CODE:BOOL=ON \
   -D CMAKE_INSTALL_PREFIX="${PKG_INST_DIR}" \
+  -D CMAKE_INSTALL_LIBDIR:PATH=lib \
   ${PKG_BUILD_TYPE} ${PKG_TYPE_FLAG} \
   -D MBEDTLS_AS_SUBPROJECT:BOOL=1 ${CMAKE_EXTRA} \
   -D ENABLE_PROGRAMS:BOOL=0 -D ENABLE_TESTING:BOOL=0
@@ -71,14 +72,7 @@ printf "\e[1m\e[36m%s\e[0m\n" "${CMAKE_COMMAND}" && eval ${CMAKE_COMMAND}
 cmake --build "${PKG_BULD_DIR}" -j ${PARALLEL_JOBS}
 cmake --install "${PKG_BULD_DIR}" ${PKG_INSTALL_STRIP}
 
-PKG_VERSION="unknown"
-if command -v git >/dev/null 2>&1 ; then
-  pushd -- "${SUBPROJ_SRC}"
-  PKG_VERSION="$(git describe --tags --always --dirty --abbrev=${GIT_ABBREV:-"7"})"
-  popd
-fi
 PKG_CONFIG_FILE="${PKG_INST_DIR}/lib/pkgconfig/mbedtls.pc"
-
 mkdir -p -- "$(dirname ${PKG_CONFIG_FILE})"
 cat > "${PKG_CONFIG_FILE}" <<- EOF
 prefix=\${pcfiledir}/../..
@@ -92,7 +86,6 @@ Libs: -L\${libdir} -lmbedtls -lmbedx509 -lmbedcrypto -lp256m -leverest
 Cflags: -I\${includedir}
 EOF
 
-
 if command -v tree >/dev/null 2>&1 ; then
   tree ${PKG_INST_DIR}
 else
@@ -100,11 +93,3 @@ else
 fi
 BUILD_DATE=$(date -u '+%Y-%m-%dT%H:%M:%SZ%:z')
 printf "\e[1m\e[35m%s\e[0m\n" "${SUBPROJ_SRC} - Build Done @${BUILD_DATE}"
-
-# # 回滚特定平台架构的编译配置 使本地环境可以复用
-# # ----------------------------
-# if [ -n "${ROLLBACK_CONFIG_CMD}" ]; then
-#   printf "\e[1m\e[36m%s\e[0m\n" "ROLLBACK_CONFIG_CMD: ${ROLLBACK_CONFIG_CMD}"
-#   eval ${ROLLBACK_CONFIG_CMD} \
-#   || { ret=$?; printf "\e[1m\e[31m%s\e[0m\n" "Failed to rollback configuration"; exit "$ret"; }
-# fi

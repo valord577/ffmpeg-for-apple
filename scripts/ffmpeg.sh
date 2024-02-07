@@ -26,7 +26,7 @@ if [ "${LIB_RELEASE}" == "1" ]; then
   PKG_BUILD_TYPE="--disable-debug"
   PKG_INSTALL_STRIP=""
 else
-  PKG_BUILD_TYPE="--disable-optimizations --enable-extra-warnings"
+  PKG_BUILD_TYPE="--disable-optimizations"
   PKG_INSTALL_STRIP="--disable-stripping"
 fi
 # ----------------------------

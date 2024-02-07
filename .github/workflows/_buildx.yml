@@ -1,0 +1,27 @@
+name: _buildx
+on:
+  workflow_call:
+    inputs:
+      platforms:
+        default: linux/amd64
+        required: false
+        type: string
+
+jobs:
+  _buildx:
+    runs-on: macos-14
+    env:
+      _REPO_LIBS: "_repo_libs"
+      _REPO_DEPS: "_repo_deps"
+      _PUSH: false
+    steps:
+      - name: Set ENV `_PUSH=true`
+        if: ${{ github.event_name == 'push' }}
+        run: echo "_PUSH=true" >> "$GITHUB_ENV"
+      - name: checkout this repo
+        uses: actions/checkout@v4
+        with:
+          path: ${{ env._REPO_LIBS }}
+      - name: ENV & Workspace
+        run: env && echo -e "\n${PWD}\n" && ls -Alh
+
