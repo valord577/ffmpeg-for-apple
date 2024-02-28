@@ -2,8 +2,8 @@ name: _buildx
 on:
   workflow_call:
     inputs:
-      platforms:
-        default: linux/amd64
+      pkg_type:
+        default: static
         required: false
         type: string
 
@@ -52,5 +52,7 @@ jobs:
           echo -e "\n"
           ls -Alh -- ${_REPO_PKGS}
       - name: build library - ${{ github.workflow }}
-        run: bash ${{ env._REPO_THIS }}/build-${{ matrix.platform }}-${{ matrix.arch }}.sh
+        run: |
+          source ${{ env._REPO_THIS }}/build-${{ matrix.platform }}-${{ matrix.arch }}.sh
+          compile ${{ github.workflow }} ${{ inputs.pkg_type }} ${{ matrix.platform }} ${{ matrix.arch }}
 
