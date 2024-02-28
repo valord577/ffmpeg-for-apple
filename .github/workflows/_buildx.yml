@@ -47,6 +47,9 @@ jobs:
           env
           echo -e "\n${PWD}\n"
           ls -Alh -- .
-      - name: build ${{ github.workflow }}
-        run: bash ${_REPO_THIS}/build-${{ matrix.platform }}-${{ matrix.arch }}.sh
+      - name: build library - ${{ github.workflow }}
+        run: |
+          set -x
+          bash ${_REPO_THIS}/build-${{ matrix.platform }}-${{ matrix.arch }}.sh
+          set +x
 
