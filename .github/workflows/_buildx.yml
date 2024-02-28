@@ -45,9 +45,12 @@ jobs:
       - name: show debug info
         run: |
           env
-          echo -e "\n${PWD}\n"
+          echo -e "\n"
+          echo -e "${PWD}"
+          echo -e "\n"
           ls -Alh -- ${_REPO_THIS}
+          echo -e "\n"
           ls -Alh -- ${_REPO_PKGS}
       - name: build library - ${{ github.workflow }}
-        run: bash ${_REPO_THIS}/build-${{ matrix.platform }}-${{ matrix.arch }}.sh
+        run: bash ${{ env._REPO_THIS }}/build-${{ matrix.platform }}-${{ matrix.arch }}.sh
 
