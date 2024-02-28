@@ -43,7 +43,10 @@ jobs:
           repository: ${{ github.repository_owner }}/packages
           path: ${{ env._REPO_PKGS }}
       - name: show debug info
-        run: env && echo -e "\n${PWD}\n" && ls -Alh
+        run: |
+          env
+          echo -e "\n${PWD}\n"
+          ls -Alh -- .
       - name: build ${{ github.workflow }}
-        run: bash ${_REPO_THIS}/${{ matrix.platform }}/${{ matrix.arch }}.sh
+        run: bash ${_REPO_THIS}/build-${{ matrix.platform }}-${{ matrix.arch }}.sh
 
