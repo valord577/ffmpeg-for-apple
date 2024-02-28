@@ -24,7 +24,7 @@ on:
       - 'env-apple.sh'
 
 jobs:
-  ${{ github.workflow }}:
+  build:
     strategy:
       matrix:
         type: ['static', 'shared']
