@@ -46,10 +46,8 @@ jobs:
         run: |
           env
           echo -e "\n${PWD}\n"
-          ls -Alh -- .
+          ls -Alh -- ${_REPO_THIS}
+          ls -Alh -- ${_REPO_PKGS}
       - name: build library - ${{ github.workflow }}
-        run: |
-          set -x
-          bash ${_REPO_THIS}/build-${{ matrix.platform }}-${{ matrix.arch }}.sh
-          set +x
+        run: bash ${_REPO_THIS}/build-${{ matrix.platform }}-${{ matrix.arch }}.sh
 
