@@ -9,19 +9,41 @@ on:
 
 jobs:
   _buildx:
+    strategy:
+      matrix:
+        include:
+          - platform: 'iphoneos'
+            arch: 'arm64'
+          - platform: 'iphoneos'
+            arch: 'armv7'
+          - platform: 'iphonesimulator'
+            arch: 'arm64'
+          - platform: 'iphonesimulator'
+            arch: 'x86_64'
+          - platform: 'macosx'
+            arch: 'arm64'
+          - platform: 'macosx'
+            arch: 'x86_64'
     runs-on: macos-14
     env:
-      _REPO_LIBS: "_repo_libs"
-      _REPO_DEPS: "_repo_deps"
+      _REPO_THIS: "_repo_this"
+      _REPO_PKGS: "_repo_pkgs"
       _PUSH: false
     steps:
-      - name: Set ENV `_PUSH=true`
+      - name: set env `_PUSH=true`
         if: ${{ github.event_name == 'push' }}
         run: echo "_PUSH=true" >> "$GITHUB_ENV"
       - name: checkout this repo
         uses: actions/checkout@v4
         with:
-          path: ${{ env._REPO_LIBS }}
-      - name: ENV & Workspace
+          path: ${{ env._REPO_THIS }}
+      - name: checkout pre-compiled packages repo
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ github.repository_owner }}/packages
+          path: ${{ env._REPO_PKGS }}
+      - name: show debug info
         run: env && echo -e "\n${PWD}\n" && ls -Alh
+      - name: build ${{ github.workflow }}
+        run: bash ${_REPO_THIS}/${{ matrix.platform }}/${{ matrix.arch }}.sh
 
