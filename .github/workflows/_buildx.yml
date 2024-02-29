@@ -89,10 +89,20 @@ jobs:
         with:
           path: ${{ env._REPO_PKGS }}/${{ github.workflow }}/${{ needs._buildx.outputs.version }}
           pattern: ${{ github.workflow }}_*_${{ inputs.pkg_type }}*.zip
-      - name: git lfs track
+      - name: create pre-compiled packages pr
         run: |
           pushd -- "${{ env._REPO_PKGS }}"
-          git lfs track ${{ github.workflow }}
+          (
+            git config user.name  "${{ github.repository_owner }}"
+            git config user.email "${{ github.run_id }}@gh-action.com"
+
+            git checkout -b "${{ github.workflow }}/${{ needs._buildx.outputs.version }}/${{ github.run_id }}"
+
+            git add .
+            git commit -m 'gha ${{ github.run_id }}: ${{ github.workflow }}/${{ needs._buildx.outputs.version }}'
+
+            gh pr create -f -b '${{ github.workflow }}/${{ needs._buildx.outputs.version }}/${{ github.run_id }}' -h 'main'
+          )
           popd
       - name: show debug info
         run: |
@@ -101,8 +111,4 @@ jobs:
 
           pushd -- "${{ env._REPO_PKGS }}"
           git status
-          echo -e "\n"
-          git lfs track
-          echo -e "\n"
-          git lfs status
           popd
