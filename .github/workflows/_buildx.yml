@@ -57,5 +57,5 @@ jobs:
       - name: upload library - ${{ github.workflow }}
         uses: actions/upload-artifact@v4
         with:
-          name: build-artifact
+          name: ${{ github.workflow }}_${{ matrix.platform }}_${{ matrix.arch }}_${{ inputs.pkg_type }}
           path: ${{ env._REPO_THIS }}/out/${{ github.workflow }}/${{ matrix.platform }}/${{ matrix.arch }}
