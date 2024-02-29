@@ -98,14 +98,15 @@ jobs:
             git config user.name  "${{ github.repository_owner }}"
             git config user.email "${{ github.run_id }}@gh-action.com"
 
-            git checkout -b "${{ github.workflow }}/${{ needs._buildx.outputs.version }}/${{ github.run_id }}"
+            branch='${{ github.workflow }}/${{ needs._buildx.outputs.version }}/${{ inputs.pkg_type }}/${{ github.run_id }}'
+            git checkout -b "${branch}"
 
             git add .
-            git commit -m 'gha ${{ github.run_id }}: ${{ github.workflow }}/${{ needs._buildx.outputs.version }}'
-            git push origin "${{ github.workflow }}/${{ needs._buildx.outputs.version }}/${{ github.run_id }}"
+            git commit -m "gha ${{ github.run_id }}: ${branch}"
+            git push origin "${branch}"
 
-            gh pr create -f -b "${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}" \
-              -B '${{ github.workflow }}/${{ needs._buildx.outputs.version }}/${{ github.run_id }}' -H 'main'
+            gh pr create -f -B "${branch}" -H 'main' \
+              -b "${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
           )
           popd
       - name: show debug info
