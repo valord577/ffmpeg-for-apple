@@ -81,13 +81,15 @@ jobs:
         with:
           repository: ${{ github.repository_owner }}/packages
           path: ${{ env._REPO_PKGS }}
+      - name: create dir - ${{ github.workflow }}/${{ needs._buildx.outputs.version }}
+        run: |
+          mkdir -p '${{ env._REPO_PKGS }}/${{ github.workflow }}/${{ needs._buildx.outputs.version }}'
       - name: download ${{ inputs.pkg_type }} libraries
         uses: actions/download-artifact@v4
         with:
+          path: ${{ env._REPO_PKGS }}/${{ github.workflow }}/${{ needs._buildx.outputs.version }}
           pattern: ${{ github.workflow }}_*_${{ inputs.pkg_type }}*.zip
       - name: show debug info
-        env:
-          _CONTEXT_NEEDS: ${{ toJson(needs) }}
         run: |
           env
           echo -e "\n"
@@ -96,5 +98,3 @@ jobs:
           ls -Alh -- .
           echo -e "\n"
           ls -Alh -- ${_REPO_PKGS}
-          echo -e "\n"
-          echo -e "${_CONTEXT_NEEDS}"
