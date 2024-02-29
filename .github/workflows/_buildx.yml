@@ -42,6 +42,21 @@ jobs:
         with:
           repository: ${{ github.repository_owner }}/packages
           path: ${{ env._REPO_PKGS }}
+      - name: buildx library - ${{ github.workflow }}
+        run: |
+          source ${{ env._REPO_THIS }}/build-${{ matrix.platform }}-${{ matrix.arch }}.sh
+          compile ${{ github.workflow }} ${{ inputs.pkg_type }} ${{ matrix.platform }} ${{ matrix.arch }}
+      - name: set required env `_PKG_VERSION`
+        run: |
+          pushd -- "${{ env._REPO_THIS }}/deps/${{ github.workflow }}"
+          echo "_PKG_VERSION=$(git describe --tags --always --abbrev=7)" >> "$GITHUB_ENV"
+          popd
+      - name: set required env `_PKG_ZIP_NAME`
+        run: |
+          echo "_PKG_ZIP_NAME=${{ github.workflow }}_${{ matrix.platform }}_${{ matrix.arch }}_${{ env._PKG_VERSION }}_${{ inputs.pkg_type }}.zip" >> "$GITHUB_ENV"
+      - name: compress library - ${{ github.workflow }}
+        run: |
+          zip -q -ry "${{ env._PKG_ZIP_NAME }}" ${{ github.workflow }}
       - name: show debug info
         run: |
           env
@@ -51,30 +66,8 @@ jobs:
           ls -Alh -- ${_REPO_THIS}
           echo -e "\n"
           ls -Alh -- ${_REPO_PKGS}
-      - name: set required env `_PKG_NAME`
-        run: |
-          echo "_PKG_NAME=${{ github.workflow }}" >> "$GITHUB_ENV"
-      - name: set required env `_PKG_VERSION`
-        run: |
-          pushd -- "${{ env._REPO_THIS }}/deps/${{ env._PKG_NAME }}"
-          echo "_PKG_VERSION=$(git describe --tags --always --abbrev=7)" >> "$GITHUB_ENV"
-          popd
-      - name: set required env `_PKG_ZIP_DIR`
-        run: |
-          echo "_PKG_ZIP_DIR=$(dirname ${{ env.INST_DIR }})" >> "$GITHUB_ENV"
-      - name: set required env `_PKG_ZIP_NAME`
-        run: |
-          echo "_PKG_ZIP_NAME=${{ env._PKG_NAME }}_${{ matrix.platform }}_${{ matrix.arch }}_${{ env._PKG_VERSION }}_${{ inputs.pkg_type }}.zip" >> "$GITHUB_ENV"
-      - name: buildx library - ${{ env._PKG_NAME }}
-        run: |
-          source ${{ env._REPO_THIS }}/build-${{ matrix.platform }}-${{ matrix.arch }}.sh
-          compile ${{ env._PKG_NAME }} ${{ inputs.pkg_type }} ${{ matrix.platform }} ${{ matrix.arch }}
-
-          pushd -- "${{ env._PKG_ZIP_DIR }}"
-          zip -q -ry "${{ env._PKG_ZIP_NAME }}" "${{ env._PKG_NAME }}"
-          popd
-      - name: upload library - ${{ env._PKG_NAME }}
+      - name: upload library - ${{ github.workflow }}
         uses: actions/upload-artifact@v4
         with:
           name: ${{ env._PKG_ZIP_NAME }}
-          path: ${{ env._PKG_ZIP_DIR }}/${{ env._PKG_ZIP_NAME }}
+          path: ${{ env._PKG_ZIP_NAME }}
