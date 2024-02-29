@@ -95,7 +95,8 @@ jobs:
         run: |
           pushd -- "${{ env._REPO_PKGS }}"
           (
-            echo "${{ secrets.SSH_KEY_REPO_PACKAGES }}" | gh ssh-key add
+            echo -e "${{ secrets.SSH_KEY_REPO_PACKAGES }}" > id_ed25519
+            gh ssh-key add id_ed25519
             gh auth status
 
             git config user.name  "${{ github.repository_owner }}"
