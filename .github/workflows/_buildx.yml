@@ -100,5 +100,5 @@ jobs:
         run: |
           gh pr create -B "${{ env._PKG_BRANCH }}" -H 'main' \
             -R '${{ github.repository_owner }}/packages' \
-            -t "update library - ${{ github.workflow }}@${{ needs._buildx.outputs.version }} ${{ inputs.pkg_type }}"
+            -t "update library - ${{ github.workflow }}@${{ needs._buildx.outputs.version }} ${{ inputs.pkg_type }}" \
             -b "${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
