@@ -90,6 +90,8 @@ jobs:
           path: ${{ env._REPO_PKGS }}/${{ github.workflow }}/${{ needs._buildx.outputs.version }}
           pattern: ${{ github.workflow }}_*_${{ inputs.pkg_type }}*.zip
       - name: create pre-compiled packages pr
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           pushd -- "${{ env._REPO_PKGS }}"
           (
