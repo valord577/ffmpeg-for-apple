@@ -7,6 +7,11 @@ on:
         required: false
         type: string
 
+env:
+  _REPO_THIS: "_repo_this"
+  _REPO_PKGS: "_repo_pkgs"
+  _PUSH: false
+
 jobs:
   _buildx:
     strategy:
@@ -23,10 +28,6 @@ jobs:
           - platform: 'macosx'
             arch: 'x86_64'
     runs-on: macos-14
-    env:
-      _REPO_THIS: "_repo_this"
-      _REPO_PKGS: "_repo_pkgs"
-      _PUSH: false
     steps:
       - name: set env `_PUSH=true`
         if: ${{ github.event_name == 'push' }}
@@ -49,8 +50,12 @@ jobs:
           ls -Alh -- ${_REPO_THIS}
           echo -e "\n"
           ls -Alh -- ${_REPO_PKGS}
-      - name: build library - ${{ github.workflow }}
+      - name: buildx library - ${{ github.workflow }}
         run: |
           source ${{ env._REPO_THIS }}/build-${{ matrix.platform }}-${{ matrix.arch }}.sh
           compile ${{ github.workflow }} ${{ inputs.pkg_type }} ${{ matrix.platform }} ${{ matrix.arch }}
-
+      - name: upload library - ${{ github.workflow }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-artifact
+          path: ${{ env._REPO_THIS }}/out/${{ github.workflow }}/${{ matrix.platform }}/${{ matrix.arch }}
