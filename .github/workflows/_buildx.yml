@@ -78,8 +78,7 @@ jobs:
         run: echo "_PUSH=true" >> "$GITHUB_ENV"
       - name: set required env `GIT_SSH_COMMAND`
         run: |
-          echo -e "${{ secrets.SSH_KEY_REPO_PACKAGES }}" > '${{ github.workspace }}/id_ed25519'
-          echo "GIT_SSH_COMMAND='ssh -i ${{ github.workspace }}/id_ed25519 -F /dev/null'" >> "$GITHUB_ENV"
+          echo -e '${{ secrets.SSH_KEY_REPO_PACKAGES }}' > '~/.ssh/id_ed25519'
       - name: checkout pre-compiled packages repo
         run: |
           git clone --depth 1 -- git@github.com:${{ github.repository_owner }}/packages.git ${{ env._REPO_PKGS }}
