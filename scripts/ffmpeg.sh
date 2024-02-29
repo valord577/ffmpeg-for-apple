@@ -60,14 +60,7 @@ ffm_pkgc mbedtls '--enable-mbedtls'
 case ${PKG_PLATFORM} in
   "macosx")
     ;;
-  "iphoneos")
-    FF_CONFIGURE_EXTRA="${FF_CONFIGURE_EXTRA} --disable-programs"
-    if [ "${PKG_ARCH}" == "armv7" ]; then
-      export CFLAGS="${CFLAGS} -Wno-ignored-optimization-argument"
-      export CXXFLAGS="${CXXFLAGS} -Wno-ignored-optimization-argument"
-    fi
-    ;;
-  "iphonesimulator")
+  "iphoneos" | "iphonesimulator")
     FF_CONFIGURE_EXTRA="${FF_CONFIGURE_EXTRA} --disable-programs"
     ;;
   ?)

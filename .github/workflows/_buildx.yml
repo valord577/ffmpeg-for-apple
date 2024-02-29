@@ -14,8 +14,6 @@ jobs:
         include:
           - platform: 'iphoneos'
             arch: 'arm64'
-          - platform: 'iphoneos'
-            arch: 'armv7'
           - platform: 'iphonesimulator'
             arch: 'arm64'
           - platform: 'iphonesimulator'

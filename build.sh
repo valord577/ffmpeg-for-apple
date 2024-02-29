@@ -18,7 +18,6 @@ fi
 SUPPORTED_TARGET=$(cat <<- 'EOF'
 macosx/x86_64
 macosx/arm64
-iphoneos/armv7
 iphoneos/arm64
 iphonesimulator/x86_64
 iphonesimulator/arm64
