@@ -69,8 +69,7 @@ jobs:
   _upload:
     needs: _buildx
     runs-on: ubuntu-latest
-    permissions:
-      pull-requests: write
+    permissions: write-all
     env:
       _PUSH: false
     steps:
