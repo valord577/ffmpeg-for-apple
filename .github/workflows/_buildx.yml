@@ -95,6 +95,8 @@ jobs:
         run: |
           pushd -- "${{ env._REPO_PKGS }}"
           (
+            gh auth status
+
             git config user.name  "${{ github.repository_owner }}"
             git config user.email "${{ github.run_id }}@gh-action.com"
 
