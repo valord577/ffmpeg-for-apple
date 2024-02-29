@@ -38,8 +38,11 @@ jobs:
       - name: set required env `_PKG_VERSION`
         run: |
           pushd -- "${{ env._REPO_THIS }}/deps/${{ github.workflow }}"
-          echo "_PKG_VERSION=$(git describe --tags --always --abbrev=7)" >> "$GITHUB_ENV"
+          _PKG_VERSION=$(git describe --tags --always --abbrev=7)
           popd
+
+          echo "_PKG_VERSION=${_PKG_VERSION}" >> "$GITHUB_ENV"
+          echo "_PKG_VERSION=${_PKG_VERSION}" >> "$GITHUB_OUTPUT"
       - name: set required env `_PKG_ZIP_NAME`
         run: |
           echo "_PKG_ZIP_NAME=${{ github.workflow }}_${{ matrix.platform }}_${{ matrix.arch }}_${{ env._PKG_VERSION }}_${{ inputs.pkg_type }}.zip" >> "$GITHUB_ENV"
@@ -80,6 +83,8 @@ jobs:
         with:
           pattern: ${{ github.workflow }}_*_${{ inputs.pkg_type }}*.zip
       - name: show debug info
+        env:
+          _CONTEXT_NEEDS: ${{ toJson(needs) }}
         run: |
           env
           echo -e "\n"
@@ -88,3 +93,5 @@ jobs:
           ls -Alh -- .
           echo -e "\n"
           ls -Alh -- ${_REPO_PKGS}
+          echo -e "\n"
+          echo -e "${_CONTEXT_NEEDS}"
