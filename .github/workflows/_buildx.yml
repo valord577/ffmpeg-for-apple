@@ -93,11 +93,7 @@ jobs:
         run: |
           env
           echo -e "\n"
-          echo -e "${PWD}"
-          echo -e "\n"
-          ls -Alh -- .
-          echo -e "\n"
-          ls -Alh -- ${_REPO_PKGS}
+          git lfs env
           echo -e "\n"
 
           pushd -- "${{ env._REPO_PKGS }}"
