@@ -78,6 +78,7 @@ jobs:
         run: echo "_PUSH=true" >> "$GITHUB_ENV"
       - name: set required env `GIT_SSH_COMMAND`
         run: |
+          mkdir -p ~/.ssh
           echo -e '${{ secrets.SSH_KEY_REPO_PACKAGES }}' > '~/.ssh/id_ed25519'
       - name: checkout pre-compiled packages repo
         run: |
