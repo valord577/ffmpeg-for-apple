@@ -71,3 +71,12 @@ jobs:
         with:
           name: ${{ env._PKG_ZIP_NAME }}
           path: ${{ env._PKG_ZIP_NAME }}
+  _upload:
+    needs: _buildx
+    runs-on: macos-14
+    steps:
+      - name: Download All Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: my-artifact
+      - run: ls -R my-artifact
