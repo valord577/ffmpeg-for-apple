@@ -98,3 +98,8 @@ jobs:
           ls -Alh -- .
           echo -e "\n"
           ls -Alh -- ${_REPO_PKGS}
+          echo -e "\n"
+
+          pushd -- "${{ env._REPO_PKGS }}"
+          git status
+          popd
