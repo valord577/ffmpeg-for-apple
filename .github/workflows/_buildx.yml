@@ -52,6 +52,8 @@ jobs:
           echo -e "\n"
           echo -e "${PWD}"
           echo -e "\n"
+          ls -Alh -- .
+          echo -e "\n"
           ls -Alh -- ${_REPO_THIS}
       - name: upload library - ${{ github.workflow }}
         uses: actions/upload-artifact@v4
@@ -82,5 +84,7 @@ jobs:
           env
           echo -e "\n"
           echo -e "${PWD}"
+          echo -e "\n"
+          ls -Alh -- .
           echo -e "\n"
           ls -Alh -- ${_REPO_PKGS}
