@@ -11,6 +11,7 @@ env:
   _REPO_THIS: "_repo_this"
   _REPO_PKGS: "_repo_pkgs"
   _PUSH: false
+  INST_DIR: "${{ github.workspace }}/${{ github.workflow }}"
 
 jobs:
   _buildx:
@@ -50,17 +51,30 @@ jobs:
           ls -Alh -- ${_REPO_THIS}
           echo -e "\n"
           ls -Alh -- ${_REPO_PKGS}
-      - name: buildx library - ${{ github.workflow }}
+      - name: set required env `_PKG_NAME`
         run: |
-          source ${{ env._REPO_THIS }}/build-${{ matrix.platform }}-${{ matrix.arch }}.sh
-          compile ${{ github.workflow }} ${{ inputs.pkg_type }} ${{ matrix.platform }} ${{ matrix.arch }}
-      - name: set env `PKG_VERSION`
+          echo "_PKG_NAME=${{ github.workflow }}" >> "$GITHUB_ENV"
+      - name: set required env `_PKG_VERSION`
         run: |
-          pushd -- "${{ env._REPO_THIS }}/deps/${{ github.workflow }}"
+          pushd -- "${{ env._REPO_THIS }}/deps/${{ env._PKG_NAME }}"
           echo "_PKG_VERSION=$(git describe --tags --always --abbrev=7)" >> "$GITHUB_ENV"
           popd
-      - name: upload library - ${{ github.workflow }}
+      - name: set required env `_PKG_ZIP_DIR`
+        run: |
+          echo "_PKG_ZIP_DIR=$(dirname ${{ env.INST_DIR }})" >> "$GITHUB_ENV"
+      - name: set required env `_PKG_ZIP_NAME`
+        run: |
+          echo "_PKG_ZIP_NAME=${{ env._PKG_NAME }}_${{ matrix.platform }}_${{ matrix.arch }}_${{ env._PKG_VERSION }}_${{ inputs.pkg_type }}.zip" >> "$GITHUB_ENV"
+      - name: buildx library - ${{ env._PKG_NAME }}
+        run: |
+          source ${{ env._REPO_THIS }}/build-${{ matrix.platform }}-${{ matrix.arch }}.sh
+          compile ${{ env._PKG_NAME }} ${{ inputs.pkg_type }} ${{ matrix.platform }} ${{ matrix.arch }}
+
+          pushd -- "${{ env._PKG_ZIP_DIR }}"
+          zip -q -ry "${{ env._PKG_ZIP_NAME }}" "${{ env._PKG_NAME }}"
+          popd
+      - name: upload library - ${{ env._PKG_NAME }}
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ github.workflow }}_${{ matrix.platform }}_${{ matrix.arch }}_${{ env._PKG_VERSION }}_${{ inputs.pkg_type }}
-          path: ${{ env._REPO_THIS }}/out/${{ github.workflow }}/${{ matrix.platform }}/${{ matrix.arch }}
+          name: ${{ env._PKG_ZIP_NAME }}
+          path: ${{ env._PKG_ZIP_DIR }}/${{ env._PKG_ZIP_NAME }}

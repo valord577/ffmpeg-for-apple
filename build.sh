@@ -4,7 +4,7 @@ set -e
 PROJ_ROOT=$(cd "$(dirname ${BASH_SOURCE[0]})"; pwd)
 
 basename="${BASH_SOURCE[0]##*/}"
-triplet="${basename%\.sh}"
+triplet="${basename%%\.*}"
 triplet_values=(${triplet//-/ })
 triplet_length=${#triplet_values[@]}
 if [ $triplet_length -eq 3 ]; then
@@ -55,8 +55,8 @@ function compile() {
     export PKG_PLATFORM="${3}"
     export PKG_ARCH="${4}"
 
-    export PKG_BULD_DIR="${PROJ_ROOT}/tmp/${PKG_NAME}/${PKG_PLATFORM}/${PKG_ARCH}"
-    export PKG_INST_DIR="${PROJ_ROOT}/out/${PKG_NAME}/${PKG_PLATFORM}/${PKG_ARCH}"
+    export PKG_BULD_DIR=${BULD_DIR:-"${PROJ_ROOT}/tmp/${PKG_NAME}/${PKG_PLATFORM}/${PKG_ARCH}"}
+    export PKG_INST_DIR=${INST_DIR:-"${PROJ_ROOT}/out/${PKG_NAME}/${PKG_PLATFORM}/${PKG_ARCH}"}
 
     if [ ! -e "${SUBPROJ_SRC}/.git" ]; then
       pushd -- "${PROJ_ROOT}"
