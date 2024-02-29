@@ -98,7 +98,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh auth refresh -s project
+          gh auth refresh -s project -h github.com
           gh pr create -B "${{ env._PKG_BRANCH }}" -H 'main' \
             -R '${{ github.repository_owner }}/packages' \
             -t "update library - ${{ github.workflow }}@${{ needs._buildx.outputs.version }} ${{ inputs.pkg_type }}" \
