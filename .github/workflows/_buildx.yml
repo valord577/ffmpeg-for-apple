@@ -90,6 +90,8 @@ jobs:
           path: ${{ env._REPO_PKGS }}/${{ github.workflow }}/${{ needs._buildx.outputs.version }}
           pattern: ${{ github.workflow }}_*_${{ inputs.pkg_type }}*.zip
       - name: create pre-compiled packages pr
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           pushd -- "${{ env._REPO_PKGS }}"
           (
@@ -101,7 +103,8 @@ jobs:
             git add .
             git commit -m 'gha ${{ github.run_id }}: ${{ github.workflow }}/${{ needs._buildx.outputs.version }}'
 
-            gh pr create -f -B '${{ github.workflow }}/${{ needs._buildx.outputs.version }}/${{ github.run_id }}' -H 'main'
+            gh pr create -f -b "${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}" \
+              -B '${{ github.workflow }}/${{ needs._buildx.outputs.version }}/${{ github.run_id }}' -H 'main'
           )
           popd
       - name: show debug info
