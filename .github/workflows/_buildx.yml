@@ -12,16 +12,16 @@ jobs:
     strategy:
       matrix:
         include:
-          - platform: 'iphoneos'
-            arch: 'arm64'
+          # - platform: 'iphoneos'
+          #   arch: 'arm64'
           # - platform: 'iphonesimulator'
           #   arch: 'arm64'
           # - platform: 'iphonesimulator'
           #   arch: 'x86_64'
           # - platform: 'macosx'
           #   arch: 'arm64'
-          # - platform: 'macosx'
-          #   arch: 'x86_64'
+          - platform: 'macosx'
+            arch: 'x86_64'
     runs-on: macos-14
     outputs:
       version: ${{ steps.version.outputs._PKG_VERSION }}
