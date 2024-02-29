@@ -101,7 +101,7 @@ jobs:
             git add .
             git commit -m 'gha ${{ github.run_id }}: ${{ github.workflow }}/${{ needs._buildx.outputs.version }}'
 
-            gh pr create -f -b '${{ github.workflow }}/${{ needs._buildx.outputs.version }}/${{ github.run_id }}' -h 'main'
+            gh pr create -f -B '${{ github.workflow }}/${{ needs._buildx.outputs.version }}/${{ github.run_id }}' -H 'main'
           )
           popd
       - name: show debug info
