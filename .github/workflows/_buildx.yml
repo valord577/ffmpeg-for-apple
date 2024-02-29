@@ -76,41 +76,25 @@ jobs:
       - name: set env `_PUSH=true`
         if: ${{ github.event_name == 'push' }}
         run: echo "_PUSH=true" >> "$GITHUB_ENV"
-      - name: set required env `GIT_SSH_COMMAND`
-        run: |
-          mkdir -p ~/.ssh
-          echo -e '${{ secrets.SSH_KEY_REPO_PACKAGES }}' > '~/.ssh/id_ed25519'
-      - name: checkout pre-compiled packages repo
-        run: |
-          git clone --depth 1 -- git@github.com:${{ github.repository_owner }}/packages.git ${{ env._REPO_PKGS }}
-      - name: create dir - ${{ github.workflow }}/${{ needs._buildx.outputs.version }}
-        run: |
-          mkdir -p '${{ env._REPO_PKGS }}/${{ github.workflow }}/${{ needs._buildx.outputs.version }}'
       - name: download ${{ inputs.pkg_type }} libraries
         uses: actions/download-artifact@v4
         with:
-          path: ${{ env._REPO_PKGS }}/${{ github.workflow }}/${{ needs._buildx.outputs.version }}
+          path: ${{ github.workflow }}
           pattern: ${{ github.workflow }}_*_${{ inputs.pkg_type }}*.zip
-      - name: create pre-compiled packages pr
-        env:
-          GH_TOKEN: ${{ github.token }}
+      - name: set required env `_PKG_BRANCH`
         run: |
-          pushd -- "${{ env._REPO_PKGS }}"
-          (
-            git config user.name  "${{ github.repository_owner }}"
-            git config user.email "${{ github.run_id }}@gh-action.com"
-
-            branch='${{ github.workflow }}/${{ needs._buildx.outputs.version }}/${{ inputs.pkg_type }}/${{ github.run_id }}'
-            git checkout -b "${branch}"
-
-            git add .
-            git commit -m "gha ${{ github.run_id }}: ${branch}"
-            git push origin "${branch}"
-
-            gh pr create -f -B "${branch}" -H 'main' \
-              -b "${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
-          )
-          popd
+          echo "_PKG_BRANCH='${{ github.workflow }}/${{ needs._buildx.outputs.version }}/${{ inputs.pkg_type }}/${{ github.run_id }}'" >> "$GITHUB_ENV"
+      - name: upload to pre-compiled packages
+        uses: s0/git-publish-subdir-action@v2.6.0
+        env:
+          REPO: git@github.com:${{ github.repository_owner }}/packages.git
+          BRANCH: ${{ env._PKG_BRANCH }}
+          FOLDER: ${{ github.workflow }}
+          TARGET_DIR: ${{ github.workflow }}/${{ needs._buildx.outputs.version }}
+          COMMIT_NAME: ${{ github.repository_owner }}
+          COMMIT_EMAIL: ${{ github.run_id }}@gh-action.com
+          MESSAGE: "gha ${{ github.run_id }}: ${{ env._PKG_BRANCH }}"
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_KEY_REPO_PACKAGES }}
       - name: show debug info
         run: |
           env
@@ -119,3 +103,42 @@ jobs:
           pushd -- "${{ env._REPO_PKGS }}"
           git status
           popd
+
+
+
+
+      # - name: set required env `GIT_SSH_COMMAND`
+      #   run: |
+      #     mkdir -p ~/.ssh
+      #     echo -e '' > '~/.ssh/id_ed25519'
+      # - name: checkout pre-compiled packages repo
+      #   run: |
+      #     git clone --depth 1 -- git@github.com:${{ github.repository_owner }}/packages.git ${{ env._REPO_PKGS }}
+      # - name: create dir - ${{ github.workflow }}/${{ needs._buildx.outputs.version }}
+      #   run: |
+      #     mkdir -p '${{ env._REPO_PKGS }}/${{ github.workflow }}/${{ needs._buildx.outputs.version }}'
+      # - name: download ${{ inputs.pkg_type }} libraries
+      #   uses: actions/download-artifact@v4
+      #   with:
+      #     path: ${{ env._REPO_PKGS }}/${{ github.workflow }}/${{ needs._buildx.outputs.version }}
+      #     pattern: ${{ github.workflow }}_*_${{ inputs.pkg_type }}*.zip
+      # - name: create pre-compiled packages pr
+      #   env:
+      #     GH_TOKEN: ${{ github.token }}
+      #   run: |
+      #     pushd -- "${{ env._REPO_PKGS }}"
+      #     (
+      #       git config user.name  "${{ github.repository_owner }}"
+      #       git config user.email "${{ github.run_id }}@gh-action.com"
+
+      #       branch='${{ github.workflow }}/${{ needs._buildx.outputs.version }}/${{ inputs.pkg_type }}/${{ github.run_id }}'
+      #       git checkout -b "${branch}"
+
+      #       git add .
+      #       git commit -m "gha ${{ github.run_id }}: ${branch}"
+      #       git push origin "${branch}"
+
+      #       gh pr create -f -B "${branch}" -H 'main' \
+      #         -b "${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+      #     )
+      #     popd
