@@ -84,11 +84,10 @@ jobs:
           chmod 0600 '${{ github.workspace }}/id_ed25519'
       - name: set required env `GIT_SSH_COMMAND`
         run: |
-          GIT_SSH_COMMAND='ssh -i ${{ github.workspace }}/id_ed25519 -F /dev/null -o IdentitiesOnly=yes -o UserKnownHostsFile=${{ github.workspace }}/known_hosts'
+          GIT_SSH_COMMAND='ssh -vvv -i ${{ github.workspace }}/id_ed25519 -F /dev/null -o IdentitiesOnly=yes -o UserKnownHostsFile=${{ github.workspace }}/known_hosts'
           echo "GIT_SSH_COMMAND=${GIT_SSH_COMMAND}" >> "$GITHUB_ENV"
       - name: checkout pkgs repo
         run: |
-          git --version
           git clone --depth 1 -- git@github.com:${{ github.repository_owner }}/packages.git ${{ env._REPO_PKGS }}
       - name: download ${{ inputs.pkg_type }} libraries
         uses: actions/download-artifact@v4
