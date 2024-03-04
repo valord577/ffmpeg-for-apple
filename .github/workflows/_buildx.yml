@@ -68,7 +68,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ${{ env._PKG_ZIP_NAME }}
-          path: ${{ github.workflow }}
+          path: '*.zip'
   # _upload:
   #   needs: _buildx
   #   runs-on: ubuntu-latest
