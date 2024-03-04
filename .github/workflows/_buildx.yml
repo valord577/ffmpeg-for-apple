@@ -28,23 +28,25 @@ jobs:
           - platform: 'macosx'
             arch: 'x86_64'
     runs-on: macos-14
-    if: ${{ (! inputs.disable_shared && matrix.pkg_type == 'shared') || (! inputs.disable_static && matrix.pkg_type == 'static') }}
     outputs:
       version: ${{ steps.version.outputs._PKG_VERSION }}
     env:
       _REPO_THIS: "_repo_this"
       INST_DIR: "${{ github.workspace }}/${{ github.workflow }}"
+      _SETP_CAN_RUN: ${{ (! inputs.disable_shared && matrix.pkg_type == 'shared') || (! inputs.disable_static && matrix.pkg_type == 'static') }}
     steps:
       - name: checkout this repo
         uses: actions/checkout@v4
         with:
           path: ${{ env._REPO_THIS }}
       - name: buildx library - ${{ github.workflow }}
+        if: ${{ env._SETP_CAN_RUN }}
         run: |
           source ${{ env._REPO_THIS }}/build-${{ matrix.platform }}-${{ matrix.arch }}.sh
           compile ${{ github.workflow }} ${{ matrix.pkg_type }} ${{ matrix.platform }} ${{ matrix.arch }}
       - name: set required env `_PKG_VERSION`
         id: version
+        if: ${{ env._SETP_CAN_RUN }}
         run: |
           pushd -- "${{ env._REPO_THIS }}/deps/${{ github.workflow }}"
           _PKG_VERSION=$(git describe --tags --always --abbrev=7)
@@ -53,9 +55,11 @@ jobs:
           echo "_PKG_VERSION=${_PKG_VERSION}" >> "$GITHUB_ENV"
           echo "_PKG_VERSION=${_PKG_VERSION}" >> "$GITHUB_OUTPUT"
       - name: set required env `_PKG_ZIP_NAME`
+        if: ${{ env._SETP_CAN_RUN }}
         run: |
           echo "_PKG_ZIP_NAME=${{ github.workflow }}_${{ matrix.platform }}_${{ matrix.arch }}_${{ env._PKG_VERSION }}_${{ matrix.pkg_type }}" >> "$GITHUB_ENV"
       - name: compress library - ${{ github.workflow }}
+        if: ${{ env._SETP_CAN_RUN }}
         run: |
           zip -ry "${{ env._PKG_ZIP_NAME }}" ${{ github.workflow }}
       - name: show debug info
@@ -66,6 +70,7 @@ jobs:
           echo -e "\n"
           ls -Alh -- .
       - name: upload library - ${{ github.workflow }}
+        if: ${{ env._SETP_CAN_RUN }}
         uses: actions/upload-artifact@v4
         with:
           name: ${{ env._PKG_ZIP_NAME }}
