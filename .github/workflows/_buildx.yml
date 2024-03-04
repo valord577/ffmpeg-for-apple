@@ -82,10 +82,6 @@ jobs:
           echo -e '${{ vars.KNOWN_HOSTS_GITHUB }}' >> '${{ github.workspace }}/known_hosts'
           echo -e '${{ secrets.PKGS_DEPLOY_KEY }}' >  '${{ github.workspace }}/id_ed25519'
           chmod 0600 '${{ github.workspace }}/id_ed25519'
-      # - name: setup pkgs deploy key
-      #   uses: webfactory/ssh-agent@v0.9.0
-      #   with:
-      #     ssh-private-key: ${{ secrets.PKGS_DEPLOY_KEY }}
       - name: set required env `GIT_SSH_COMMAND`
         run: |
           GIT_SSH_COMMAND='ssh -i ${{ github.workspace }}/id_ed25519 -F /dev/null -o IdentitiesOnly=yes -o UserKnownHostsFile=${{ github.workspace }}/known_hosts'
@@ -116,22 +112,9 @@ jobs:
             git push origin "${{ env._PKG_BRANCH }}"
           )
           popd
-
-      # - name: upload to pre-compiled packages
-      #   uses: s0/git-publish-subdir-action@v2.6.0
-      #   env:
-      #     REPO: git@github.com:${{ github.repository_owner }}/packages.git
-      #     BRANCH: ${{ env._PKG_BRANCH }}
-      #     FOLDER: ${{ github.workflow }}
-      #     TARGET_DIR: ${{ github.workflow }}/${{ needs._buildx.outputs.version }}
-      #     COMMIT_NAME: ${{ github.repository_owner }}
-      #     COMMIT_EMAIL: ${{ github.run_id }}@gh-action.com
-      #     MESSAGE: "gh action: ${{ env._PKG_BRANCH }}"
-      #     SSH_PRIVATE_KEY: ${{ secrets.SSH_KEY_REPO_PACKAGES }}
-
       - name: create pre-compiled packages pr
         env:
-          GH_TOKEN: ${{ github.token }}
+          GH_TOKEN: ${{ secrets.GH_ACCESS_TOKEN }}
         run: |
           gh pr create -B "${{ env._PKG_BRANCH }}" -H 'main' \
             -R '${{ github.repository_owner }}/packages' \
