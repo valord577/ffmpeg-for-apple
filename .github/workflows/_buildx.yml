@@ -15,9 +15,6 @@ on:
         required: false
         type: boolean
 
-env:
-  CCACHE_DIR: ${{ github.workspace }}/.ccache
-
 jobs:
   _buildx:
     strategy:
@@ -33,8 +30,9 @@ jobs:
       version: ${{ steps.version.outputs._PKG_VERSION }}
     env:
       _REPO_THIS: "_repo_this"
-      INST_DIR: "${{ github.workspace }}/${{ github.workflow }}"
       _SETP_CAN_RUN: ${{ (! inputs.disable_shared && matrix.pkg_type == 'shared') || (! inputs.disable_static && matrix.pkg_type == 'static') }}
+      INST_DIR: "${{ github.workspace }}/${{ github.workflow }}"
+      CCACHE_DIR: ${{ github.workspace }}/.ccache
       CCACHE_GHA_KEY: ${{ matrix.pkg_type }}-${{ matrix.platform }}-${{ matrix.arch }}
     steps:
       - name: checkout this repo
