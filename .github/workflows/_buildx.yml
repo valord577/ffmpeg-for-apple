@@ -84,7 +84,7 @@ jobs:
           chmod 0600 '${{ github.workspace }}/id_ed25519'
       - name: set required env `GIT_SSH_COMMAND`
         run: |
-          GIT_SSH_COMMAND='ssh -vvv -i ${{ github.workspace }}/id_ed25519 -F /dev/null -o IdentitiesOnly=yes -o UserKnownHostsFile=${{ github.workspace }}/known_hosts'
+          GIT_SSH_COMMAND='ssh -vvv -i ${{ github.workspace }}/id_ed25519 -o IdentitiesOnly=yes -o UserKnownHostsFile=${{ github.workspace }}/known_hosts'
           echo "GIT_SSH_COMMAND=${GIT_SSH_COMMAND}" >> "$GITHUB_ENV"
       - name: checkout pkgs repo
         run: |
