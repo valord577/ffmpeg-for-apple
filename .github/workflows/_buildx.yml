@@ -15,6 +15,9 @@ on:
         required: false
         type: boolean
 
+env:
+  CCACHE_DIR: ${{ github.workspace }}/.ccache
+
 jobs:
   _buildx:
     strategy:
@@ -37,11 +40,24 @@ jobs:
         uses: actions/checkout@v4
         with:
           path: ${{ env._REPO_THIS }}
+      - name: install required software(s)
+        run: |
+          brew install ccache
+      - name: gh action ccache install
+        uses: actions/cache/restore@v4
+        with:
+          path: ${{ env.CCACHE_DIR }}
+          key: ${{ runner.os }}
       - name: buildx library - ${{ github.workflow }}
         if: ${{ env._SETP_CAN_RUN == 'true' }}
         run: |
           source ${{ env._REPO_THIS }}/build-${{ matrix.platform }}-${{ matrix.arch }}.sh
           compile ${{ github.workflow }} ${{ matrix.pkg_type }} ${{ matrix.platform }} ${{ matrix.arch }}
+      - name: gh action ccache save
+        uses: actions/cache/save@v4
+        with:
+          path: ${{ env.CCACHE_DIR }}
+          key: ${{ runner.os }}
       - name: set required env `_PKG_VERSION`
         id: version
         if: ${{ env._SETP_CAN_RUN == 'true' }}
@@ -67,6 +83,10 @@ jobs:
           echo -e "${PWD}"
           echo -e "\n"
           ls -Alh -- .
+          echo -e "\n"
+          ccache -s
+          echo -e "\n"
+          ccache -p
       - name: upload library - ${{ github.workflow }}
         if: ${{ env._SETP_CAN_RUN == 'true' }}
         uses: actions/upload-artifact@v4
