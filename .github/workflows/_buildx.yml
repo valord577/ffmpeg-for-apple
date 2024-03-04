@@ -42,7 +42,7 @@ jobs:
       - name: install required software(s)
         run: |
           brew install ccache
-      - name: gh action ccache install
+      - name: gh action ccache restore
         uses: actions/cache/restore@v4
         with:
           path: ${{ env.CCACHE_DIR }}
