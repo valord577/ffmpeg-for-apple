@@ -33,7 +33,8 @@ jobs:
       _SETP_CAN_RUN: ${{ (! inputs.disable_shared && matrix.pkg_type == 'shared') || (! inputs.disable_static && matrix.pkg_type == 'static') }}
       INST_DIR: "${{ github.workspace }}/${{ github.workflow }}"
       CCACHE_DIR: ${{ github.workspace }}/.ccache
-      CCACHE_GHA_KEY: ${{ matrix.pkg_type }}-${{ matrix.platform }}-${{ matrix.arch }}
+      CCACHE_GHA_KEY: ${{ matrix.pkg_type }}-${{ matrix.platform }}-${{ matrix.arch }}-${{ github.run_id }}-${{ github.run_number }}-${{ github.run_attempt }}
+      CCACHE_GHA_KEY_RESTORE: ${{ matrix.pkg_type }}-${{ matrix.platform }}-${{ matrix.arch }}
     steps:
       - name: checkout this repo
         uses: actions/checkout@v4
@@ -47,6 +48,8 @@ jobs:
         with:
           path: ${{ env.CCACHE_DIR }}
           key: ${{ env.CCACHE_GHA_KEY }}
+          restore-keys: |
+            ${{ env.CCACHE_GHA_KEY_RESTORE }}
       - name: buildx library - ${{ github.workflow }}
         if: ${{ env._SETP_CAN_RUN == 'true' }}
         run: |
