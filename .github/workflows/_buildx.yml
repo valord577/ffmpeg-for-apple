@@ -124,10 +124,6 @@ jobs:
 
             git add .
             git commit -m "gh action: ${{ env._PKG_BRANCH }}"
-
-            if [ "${_PUSH_CAN_EXE}" ]; then
-              git push origin "${{ env._PKG_BRANCH }}"
-            fi
           )
           popd
       - name: create pre-compiled packages pr
@@ -135,6 +131,12 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GH_ACCESS_TOKEN }}
         run: |
+          pushd -- "${{ env._REPO_PKGS }}"
+          (
+            git push origin "${{ env._PKG_BRANCH }}"
+          )
+          popd
+
           gh pr create -H "${{ env._PKG_BRANCH }}" -B 'main' \
             -R '${{ github.repository_owner }}/packages' \
             -t "update library - ${{ github.workflow }}@${{ needs._buildx.outputs.version }}" \
