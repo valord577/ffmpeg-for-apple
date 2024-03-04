@@ -35,6 +35,7 @@ jobs:
       _REPO_THIS: "_repo_this"
       INST_DIR: "${{ github.workspace }}/${{ github.workflow }}"
       _SETP_CAN_RUN: ${{ (! inputs.disable_shared && matrix.pkg_type == 'shared') || (! inputs.disable_static && matrix.pkg_type == 'static') }}
+      CCACHE_GHA_KEY: ${{ runner.os }}-${{ matrix.pkg_type }}-${{ matrix.platform }}-${{ matrix.arch }}
     steps:
       - name: checkout this repo
         uses: actions/checkout@v4
@@ -47,7 +48,7 @@ jobs:
         uses: actions/cache/restore@v4
         with:
           path: ${{ env.CCACHE_DIR }}
-          key: ${{ runner.os }}
+          key: ${{ env.CCACHE_GHA_KEY }}
       - name: buildx library - ${{ github.workflow }}
         if: ${{ env._SETP_CAN_RUN == 'true' }}
         run: |
@@ -57,7 +58,7 @@ jobs:
         uses: actions/cache/save@v4
         with:
           path: ${{ env.CCACHE_DIR }}
-          key: ${{ runner.os }}
+          key: ${{ env.CCACHE_GHA_KEY }}
       - name: set required env `_PKG_VERSION`
         id: version
         if: ${{ env._SETP_CAN_RUN == 'true' }}
