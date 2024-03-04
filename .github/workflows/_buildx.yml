@@ -2,15 +2,20 @@ name: _buildx
 on:
   workflow_call:
     inputs:
-      pkg_type:
-        default: static
+      disable_shared:
+        default: false
         required: false
-        type: string
+        type: boolean
+      disable_static:
+        default: false
+        required: false
+        type: boolean
 
 jobs:
   _buildx:
     strategy:
       matrix:
+        pkg_type: [shared, static]
         include:
           - platform: 'iphoneos'
             arch: 'arm64'
@@ -23,6 +28,7 @@ jobs:
           - platform: 'macosx'
             arch: 'x86_64'
     runs-on: macos-14
+    if: ${{ (! inputs.disable_shared && matrix.pkg_type == 'shared') || (! inputs.disable_static && matrix.pkg_type == 'static') }}
     outputs:
       version: ${{ steps.version.outputs._PKG_VERSION }}
     env:
@@ -36,7 +42,7 @@ jobs:
       - name: buildx library - ${{ github.workflow }}
         run: |
           source ${{ env._REPO_THIS }}/build-${{ matrix.platform }}-${{ matrix.arch }}.sh
-          compile ${{ github.workflow }} ${{ inputs.pkg_type }} ${{ matrix.platform }} ${{ matrix.arch }}
+          compile ${{ github.workflow }} ${{ matrix.pkg_type }} ${{ matrix.platform }} ${{ matrix.arch }}
       - name: set required env `_PKG_VERSION`
         id: version
         run: |
@@ -48,10 +54,10 @@ jobs:
           echo "_PKG_VERSION=${_PKG_VERSION}" >> "$GITHUB_OUTPUT"
       - name: set required env `_PKG_ZIP_NAME`
         run: |
-          echo "_PKG_ZIP_NAME=${{ github.workflow }}_${{ matrix.platform }}_${{ matrix.arch }}_${{ env._PKG_VERSION }}_${{ inputs.pkg_type }}.zip" >> "$GITHUB_ENV"
+          echo "_PKG_ZIP_NAME=${{ github.workflow }}_${{ matrix.platform }}_${{ matrix.arch }}_${{ env._PKG_VERSION }}_${{ matrix.pkg_type }}" >> "$GITHUB_ENV"
       - name: compress library - ${{ github.workflow }}
         run: |
-          zip -q -ry "${{ env._PKG_ZIP_NAME }}" ${{ github.workflow }}
+          zip -ry "${{ env._PKG_ZIP_NAME }}" ${{ github.workflow }}
       - name: show debug info
         run: |
           env
@@ -59,66 +65,66 @@ jobs:
           echo -e "${PWD}"
           echo -e "\n"
           ls -Alh -- .
-          echo -e "\n"
-          ls -Alh -- ${_REPO_THIS}
       - name: upload library - ${{ github.workflow }}
         uses: actions/upload-artifact@v4
         with:
           name: ${{ env._PKG_ZIP_NAME }}
-          path: ${{ env._PKG_ZIP_NAME }}
-  _upload:
-    needs: _buildx
-    runs-on: ubuntu-latest
-    env:
-      _REPO_PKGS: "_repo_pkgs"
-      _PUSH: false
-    steps:
-      - name: set env `_PUSH=true`
-        if: ${{ github.event_name == 'push' }}
-        run: echo "_PUSH=true" >> "$GITHUB_ENV"
-      - name: setup pkgs deploy key
-        # https://stackoverflow.com/questions/60477061/github-actions-how-to-deploy-to-remote-server-using-ssh
-        run: |
-          echo -e '${{ vars.KNOWN_HOSTS_GITHUB }}' >> '${{ github.workspace }}/known_hosts'
-          echo -e '${{ secrets.PKGS_DEPLOY_KEY }}' >  '${{ github.workspace }}/id_ed25519'
-          chmod 0600 '${{ github.workspace }}/id_ed25519'
-      - name: set required env `GIT_SSH_COMMAND`
-        run: |
-          GIT_SSH_COMMAND='ssh -i ${{ github.workspace }}/id_ed25519 -F /dev/null -o IdentitiesOnly=yes -o UserKnownHostsFile=${{ github.workspace }}/known_hosts'
-          echo "GIT_SSH_COMMAND=${GIT_SSH_COMMAND}" >> "$GITHUB_ENV"
-      - name: checkout pkgs repo
-        run: |
-          git clone --depth 1 -- git@github.com:${{ github.repository_owner }}/packages.git ${{ env._REPO_PKGS }}
-      - name: download ${{ inputs.pkg_type }} libraries
-        uses: actions/download-artifact@v4
-        with:
-          path: ${{ env._REPO_PKGS }}/${{ github.workflow }}/${{ needs._buildx.outputs.version }}
-          pattern: ${{ github.workflow }}_*_${{ inputs.pkg_type }}*.zip
-      - name: set required env `_PKG_BRANCH`
-        run: |
-          _PKG_BRANCH='${{ github.workflow }}/${{ needs._buildx.outputs.version }}/${{ github.run_id }}/${{ inputs.pkg_type }}'
-          echo "_PKG_BRANCH=${_PKG_BRANCH}" >> "$GITHUB_ENV"
-      - name: upload to pre-compiled packages
-        run: |
-          pushd -- "${{ env._REPO_PKGS }}"
-          (
-            git config user.name  "${{ github.run_id }}@gh-action"
-            git config user.email "${{ github.run_id }}@gh-action.com"
+          path: ${{ github.workflow }}
+  # _upload:
+  #   needs: _buildx
+  #   runs-on: ubuntu-latest
+  #   env:
+  #     _REPO_PKGS: "_repo_pkgs"
+  #     _PUSH: false
+  #   steps:
+  #     - name: set env `_PUSH=true`
+  #       if: ${{ github.event_name == 'push' }}
+  #       run: echo "_PUSH=true" >> "$GITHUB_ENV"
+  #     - name: setup pkgs deploy key
+  #       # https://stackoverflow.com/questions/60477061/github-actions-how-to-deploy-to-remote-server-using-ssh
+  #       run: |
+  #         echo -e '${{ vars.KNOWN_HOSTS_GITHUB }}' >> '${{ github.workspace }}/known_hosts'
+  #         echo -e '${{ secrets.PKGS_DEPLOY_KEY }}' >  '${{ github.workspace }}/id_ed25519'
+  #         chmod 0600 '${{ github.workspace }}/id_ed25519'
+  #     - name: set required env `GIT_SSH_COMMAND`
+  #       run: |
+  #         GIT_SSH_COMMAND='ssh -i ${{ github.workspace }}/id_ed25519 -F /dev/null -o IdentitiesOnly=yes -o UserKnownHostsFile=${{ github.workspace }}/known_hosts'
+  #         echo "GIT_SSH_COMMAND=${GIT_SSH_COMMAND}" >> "$GITHUB_ENV"
+  #     - name: checkout pkgs repo
+  #       run: |
+  #         git clone --depth 1 -- git@github.com:${{ github.repository_owner }}/packages.git ${{ env._REPO_PKGS }}
+  #     - name: download ${{ inputs.pkg_type }} libraries
+  #       uses: actions/download-artifact@v4
+  #       with:
+  #         path: ${{ env._REPO_PKGS }}/${{ github.workflow }}/${{ needs._buildx.outputs.version }}
+  #         pattern: ${{ github.workflow }}_*_${{ inputs.pkg_type }}*.zip
+  #     - name: set required env `_PKG_BRANCH`
+  #       run: |
+  #         _PKG_BRANCH='${{ github.workflow }}/${{ needs._buildx.outputs.version }}/${{ github.run_id }}/${{ inputs.pkg_type }}'
+  #         echo "_PKG_BRANCH=${_PKG_BRANCH}" >> "$GITHUB_ENV"
+  #     - name: upload to pre-compiled packages
+  #       run: |
+  #         pushd -- "${{ env._REPO_PKGS }}"
+  #         (
+  #           git config user.name  "${{ github.run_id }}@gh-action"
+  #           git config user.email "${{ github.run_id }}@gh-action.com"
 
-            git checkout -b "${{ env._PKG_BRANCH }}"
+  #           git checkout -b "${{ env._PKG_BRANCH }}"
 
-            git add .
-            git commit -m "gh action: ${{ env._PKG_BRANCH }}"
-            git push origin "${{ env._PKG_BRANCH }}"
+  #           git add .
+  #           git commit -m "gh action: ${{ env._PKG_BRANCH }}"
 
-            git branch -vva
-          )
-          popd
-      - name: create pre-compiled packages pr
-        env:
-          GH_TOKEN: ${{ secrets.GH_ACCESS_TOKEN }}
-        run: |
-          gh pr create -H "${{ env._PKG_BRANCH }}" -B 'main' \
-            -R '${{ github.repository_owner }}/packages' \
-            -t "update library - ${{ github.workflow }}@${{ needs._buildx.outputs.version }} ${{ inputs.pkg_type }}" \
-            -b "${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+  #           if [ "${_PUSH}" ]; then
+  #             git push origin "${{ env._PKG_BRANCH }}"
+  #           fi
+  #         )
+  #         popd
+  #     - name: create pre-compiled packages pr
+  #       if: ${{ env._PUSH }}
+  #       env:
+  #         GH_TOKEN: ${{ secrets.GH_ACCESS_TOKEN }}
+  #       run: |
+  #         gh pr create -H "${{ env._PKG_BRANCH }}" -B 'main' \
+  #           -R '${{ github.repository_owner }}/packages' \
+  #           -t "update library - ${{ github.workflow }}@${{ needs._buildx.outputs.version }} ${{ inputs.pkg_type }}" \
+  #           -b "${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"

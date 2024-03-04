@@ -25,10 +25,5 @@ on:
 
 jobs:
   build:
-    strategy:
-      matrix:
-        type: ['static', 'shared']
     secrets: inherit
     uses: ./.github/workflows/_buildx.yml
-    with:
-      pkg_type: ${{ matrix.type }}
