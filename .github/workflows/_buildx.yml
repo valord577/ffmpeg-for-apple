@@ -76,20 +76,19 @@ jobs:
       - name: set env `_PUSH=true`
         if: ${{ github.event_name == 'push' }}
         run: echo "_PUSH=true" >> "$GITHUB_ENV"
-      # - name: setup pkgs deploy key
-      #   # https://stackoverflow.com/questions/60477061/github-actions-how-to-deploy-to-remote-server-using-ssh
-      #   run: |
-      #     echo -e '${{ vars.KNOWN_HOSTS_GITHUB }}' >> '${{ github.workspace }}/known_hosts'
-      #     echo -e '${{ secrets.PKGS_DEPLOY_KEY }}' >  '${{ github.workspace }}/id_ed25519'
-      #     chmod 0600 '${{ github.workspace }}/id_ed25519'
       - name: setup pkgs deploy key
-        uses: webfactory/ssh-agent@v0.9.0
-        with:
-          ssh-private-key: ${{ secrets.PKGS_DEPLOY_KEY }}
-      - name: set required env `GIT_SSH_COMMAND`
+        # https://stackoverflow.com/questions/60477061/github-actions-how-to-deploy-to-remote-server-using-ssh
         run: |
           echo -e '${{ vars.KNOWN_HOSTS_GITHUB }}' >> '${{ github.workspace }}/known_hosts'
-          GIT_SSH_COMMAND='ssh -F /dev/null -o IdentitiesOnly=yes -o UserKnownHostsFile=${{ github.workspace }}/known_hosts'
+          echo -e '${{ secrets.PKGS_DEPLOY_KEY }}' >  '${{ github.workspace }}/id_ed25519'
+          chmod 0600 '${{ github.workspace }}/id_ed25519'
+      # - name: setup pkgs deploy key
+      #   uses: webfactory/ssh-agent@v0.9.0
+      #   with:
+      #     ssh-private-key: ${{ secrets.PKGS_DEPLOY_KEY }}
+      - name: set required env `GIT_SSH_COMMAND`
+        run: |
+          GIT_SSH_COMMAND='ssh -i ${{ github.workspace }}/id_ed25519 -F /dev/null -o IdentitiesOnly=yes -o UserKnownHostsFile=${{ github.workspace }}/known_hosts'
           echo "GIT_SSH_COMMAND=${GIT_SSH_COMMAND}" >> "$GITHUB_ENV"
       - name: checkout pkgs repo
         run: |
