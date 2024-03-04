@@ -102,7 +102,7 @@ jobs:
         run: |
           pushd -- "${{ env._REPO_PKGS }}"
           (
-            git config user.name  "${{ github.repository_owner }}"
+            git config user.name  "${{ github.run_id }}@gh-action"
             git config user.email "${{ github.run_id }}@gh-action.com"
 
             git checkout -b "${{ env._PKG_BRANCH }}"
@@ -110,6 +110,8 @@ jobs:
             git add .
             git commit -m "gh action: ${{ env._PKG_BRANCH }}"
             git push origin "${{ env._PKG_BRANCH }}"
+
+            git branch -vva
           )
           popd
       - name: create pre-compiled packages pr
