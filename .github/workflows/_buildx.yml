@@ -35,7 +35,7 @@ jobs:
       _REPO_THIS: "_repo_this"
       INST_DIR: "${{ github.workspace }}/${{ github.workflow }}"
       _SETP_CAN_RUN: ${{ (! inputs.disable_shared && matrix.pkg_type == 'shared') || (! inputs.disable_static && matrix.pkg_type == 'static') }}
-      CCACHE_GHA_KEY: ${{ runner.os }}-${{ matrix.pkg_type }}-${{ matrix.platform }}-${{ matrix.arch }}
+      CCACHE_GHA_KEY: ${{ matrix.pkg_type }}-${{ matrix.platform }}-${{ matrix.arch }}
     steps:
       - name: checkout this repo
         uses: actions/checkout@v4
