@@ -16,16 +16,10 @@ jobs:
     strategy:
       matrix:
         pkg_type: [shared, static]
-        include:
+        platform: [iphoneos, iphonesimulator, macosx]
+        arch: [arm64, x86_64]
+        exclude:
           - platform: 'iphoneos'
-            arch: 'arm64'
-          - platform: 'iphonesimulator'
-            arch: 'arm64'
-          - platform: 'iphonesimulator'
-            arch: 'x86_64'
-          - platform: 'macosx'
-            arch: 'arm64'
-          - platform: 'macosx'
             arch: 'x86_64'
     runs-on: macos-14
     outputs:
