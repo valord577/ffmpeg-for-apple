@@ -27,3 +27,5 @@ jobs:
   build:
     secrets: inherit
     uses: ./.github/workflows/_buildx.yml
+    with:
+      disable_shared: true
