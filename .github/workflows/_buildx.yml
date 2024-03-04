@@ -101,6 +101,8 @@ jobs:
           git clone --depth 1 -- git@github.com:${{ github.repository_owner }}/packages.git ${{ env._REPO_PKGS }}
       - name: download ${{ github.workflow }} libraries
         uses: actions/download-artifact@v4
+        with:
+          path: ${{ github.workspace }}/${{ github.workflow }}
       - name: show debug info
         run: |
           env
@@ -109,7 +111,7 @@ jobs:
           echo -e "\n"
           ls -Alh -- .
           echo -e "\n"
-          ls -R
+          ls -AlhR ${{ github.workflow }}
       - name: set required env `_PKG_BRANCH`
         run: |
           _PKG_BRANCH='${{ github.workflow }}/${{ needs._buildx.outputs.version }}/${{ github.run_id }}'
@@ -122,6 +124,9 @@ jobs:
             git config user.email "${{ github.run_id }}@gh-action.com"
 
             git checkout -b "${{ env._PKG_BRANCH }}"
+
+            mkdir -p '${{ github.workflow }}/${{ needs._buildx.outputs.version }}'
+            mv ${{ github.workspace }}/${{ github.workflow }}/*/*.zip '${{ github.workflow }}/${{ needs._buildx.outputs.version }}'
 
             git add .
             git commit -m "gh action: ${{ env._PKG_BRANCH }}"
